@@ -1,10 +1,12 @@
-const debug = require('debug')('x-ray:phantom');
+const debug = require('debug')('x-ray:nightmare');
 const normalize = require('normalizeurl');
 const Nightmare = require('nightmare');
 
 
 function makeDriver(opts) {
   opts = opts || {};
+  // add default user agent
+  if (!opts.useragent) opts.useragent = 'xray/nightmare';
 
 	return (ctx, callback) => {
 		debug('going to %s', ctx.url);
@@ -21,7 +23,7 @@ function makeDriver(opts) {
         if (normalize(resource.url) == normalize(ctx.url)) {
           debug('got response from %s: %s', resource.url, resource.status);
           ctx.status = resource.status;
-        };
+        }
       })
       .on('urlChanged', (url) => {
         debug('redirect: %s', url);
@@ -43,7 +45,8 @@ function makeDriver(opts) {
         ctx.body = body;
         debug('%s - %s', ctx.url, ctx.status);
         callback(null, ctx);
-      });
+      })
+      .catch(callback);
 	};
 }
 
